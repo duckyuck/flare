@@ -1,4 +1,4 @@
-(defproject flare "0.1.0-SNAPSHOT"
+(defproject flare "0.1.0"
   :description "Enlightened failure reports for clojure.test"
   :url "http://github.com/andersfurseth/flare"
   :license {:name "Eclipse Public License"
