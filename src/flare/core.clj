@@ -46,11 +46,11 @@
 
 (defn report-set
   [only-in-a only-in-b]
-  (clojure.string/join
-   " "
-   (-> []
-       (cond-> (seq only-in-a) (conj (str "expected to contain: " (flatten-when-single only-in-a) ", but not found.")))
-       (cond-> (seq only-in-b) (conj (str "contained: " (flatten-when-single only-in-b) ", but not expected"))))))
+  [(clojure.string/join
+    " "
+    (-> []
+        (cond-> (seq only-in-a) (conj (str "expected to contain: " (flatten-when-single only-in-a) ", but not found.")))
+        (cond-> (seq only-in-b) (conj (str "contained: " (flatten-when-single only-in-b) ", but not expected")))))])
 
 (defrecord SetDiff [only-in-a only-in-b]
   Report

@@ -60,6 +60,23 @@
     #_(is (not= (diff [0 1 2 3] [0 1 2])
               (VectorDiff. {}))))
 
+  (testing "set"
+
+    (is (= (diff #{1 2 3} #{1 2 3})
+           nil))
+
+    (is (= (diff #{1 2 3} nil)
+           (AtomDiff. #{1 2 3} nil)))
+
+    (is (= (diff #{1 2 3} #{1 2})
+           (SetDiff. #{3} #{})))
+
+    (is (= (diff #{1 2} #{1 2 3})
+           (SetDiff. #{} #{3})))
+
+    (is (= (diff #{1 2 3} #{2 3 4})
+           (SetDiff. #{1} #{4}))))
+
   (testing "string"
 
     (is (= (diff "foo" "foo")
@@ -106,12 +123,12 @@
 
     (testing "only in a"
       (is (= (report (SetDiff. [:a] nil))
-             "expected to contain: :a, but not found.")))
+             ["expected to contain: :a, but not found."])))
 
     (testing "only in b"
       (is (= (report (SetDiff. nil [:b]))
-             "contained: :b, but not expected")))
+             ["contained: :b, but not expected"])))
 
     (testing "multiple keys"
       (is (= (report (SetDiff. [:a :b] [:c :d]))
-             "expected to contain: [:a :b], but not found. contained: [:c :d], but not expected")))))
+             ["expected to contain: [:a :b], but not found. contained: [:c :d], but not expected"])))))
