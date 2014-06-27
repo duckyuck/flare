@@ -1,4 +1,4 @@
-(defproject flare "0.1.0"
+(defproject flare "0.1.1-SNAPSHOT"
   :description "Enlightened failure reports for clojure.test"
   :url "http://github.com/andersfurseth/flare"
   :license {:name "Eclipse Public License"
@@ -7,4 +7,5 @@
                  [org.clojars.brenton/google-diff-match-patch "0.1"]
                  [clansi "1.0.0"]]
   :profiles {:dev {:injections [(require 'flare.clojure-test)
-                                (flare.clojure-test/install!)]}})
+                                (flare.clojure-test/install!)]}}
+  :lein-release {:deploy-via :clojars})
