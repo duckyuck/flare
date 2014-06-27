@@ -2,11 +2,9 @@
 
 Flare brings enlightened failure reports to your [clojure.test](http://richhickey.github.io/clojure/clojure.test-api.html) tests.
 
-Latest version is:
+Latest version is: 
 
-```clojure
-[flare "0.1.0-SNAPSHOT"]
-```
+[![Clojars Project](http://clojars.org/flare/latest-version.svg)](http://clojars.org/flare)
 
 ## Usage
 
