@@ -32,11 +32,21 @@
       (diff-similar a b)
       (diff-atom a b))))
 
+(defn ->seq
+  [v]
+  (if (sequential? v)
+    v
+    [v]))
+
+(defn generate-reports
+  [diff]
+  (->seq (report diff)))
+
 ;; Atom
 
 (defrecord AtomDiff [a b]
   Report
-  (report [_] [(str "expected: " (pr-str a) ", was " (pr-str b))]))
+  (report [_] (str "expected: " (pr-str a) ", was " (pr-str b))))
 
 (defn diff-atom
   [a b]
@@ -46,11 +56,12 @@
 
 (defn report-set
   [only-in-a only-in-b]
-  [(clojure.string/join
-    " "
-    (-> []
-        (cond-> (seq only-in-a) (conj (str "expected to contain: " (flatten-when-single only-in-a) ", but not found.")))
-        (cond-> (seq only-in-b) (conj (str "contained: " (flatten-when-single only-in-b) ", but not expected")))))])
+  (clojure.string/join
+   " "
+   (-> []
+       (cond-> (seq only-in-a) (conj (str "expected to contain: " (flatten-when-single only-in-a) ", but not found.")))
+       (cond-> (seq only-in-b) (conj (str "contained: " (flatten-when-single only-in-b) ", but not expected"))))))
+
 
 (defrecord SetDiff [only-in-a only-in-b]
   Report
@@ -138,9 +149,9 @@
 
 (defn report-string-clansi
   [diff]
-  [(->> diff
-        (map #(clansi/style (.text %) (diff-colors (.operation %))))
-        (apply str "strings differ: "))])
+  (->> diff
+       (map #(clansi/style (.text %) (diff-colors (.operation %))))
+       (apply str "strings differ: ")))
 
 (defrecord StringDiffClansi [diff]
   Report

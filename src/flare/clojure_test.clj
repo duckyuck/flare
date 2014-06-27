@@ -1,12 +1,12 @@
 (ns flare.clojure-test
-  (:require [flare.core :refer [diff report]]
+  (:require [flare.core :refer [diff generate-reports]]
             [clojure.test :as ct]))
 
 (defn install! []
 
   (defn print-diff
     [diff]
-    (let [reports (report diff)]
+    (let [reports (generate-reports diff)]
       (println "")
       (doseq [report reports]
         (println report))))

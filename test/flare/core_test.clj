@@ -91,7 +91,7 @@
 
   (testing "atom"
     (is (= (report (AtomDiff. "a" 1))
-           ["expected: \"a\", was 1"])))
+           "expected: \"a\", was 1")))
 
   (testing "vector"
     (is (= (report (VectorDiff. {0 mock-report, 1 mock-report }))
@@ -123,12 +123,12 @@
 
     (testing "only in a"
       (is (= (report (SetDiff. [:a] nil))
-             ["expected to contain: :a, but not found."])))
+             "expected to contain: :a, but not found.")))
 
     (testing "only in b"
       (is (= (report (SetDiff. nil [:b]))
-             ["contained: :b, but not expected"])))
+             "contained: :b, but not expected")))
 
     (testing "multiple keys"
       (is (= (report (SetDiff. [:a :b] [:c :d]))
-             ["expected to contain: [:a :b], but not found. contained: [:c :d], but not expected"])))))
+             "expected to contain: [:a :b], but not found. contained: [:c :d], but not expected")))))
