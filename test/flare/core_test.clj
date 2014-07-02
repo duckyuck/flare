@@ -107,6 +107,10 @@
       (is (= (report (MapEntryDiff. [:a] nil))
              "expected to contain key: :a, but not found.")))
 
+    (testing "nil keys"
+      (is (= (report (MapEntryDiff. [nil] nil))
+             "expected to contain key: nil, but not found.")))
+
     (testing "only in b"
       (is (= (report (MapEntryDiff. nil [:b]))
              "contained key: :b, but not expected")))

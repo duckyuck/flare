@@ -59,8 +59,8 @@
   (clojure.string/join
    " "
    (-> []
-       (cond-> (seq only-in-a) (conj (str "expected to contain: " (flatten-when-single only-in-a) ", but not found.")))
-       (cond-> (seq only-in-b) (conj (str "contained: " (flatten-when-single only-in-b) ", but not expected"))))))
+       (cond-> (seq only-in-a) (conj (str "expected to contain: " (pr-str (flatten-when-single only-in-a)) ", but not found.")))
+       (cond-> (seq only-in-b) (conj (str "contained: " (pr-str (flatten-when-single only-in-b)) ", but not expected"))))))
 
 
 (defrecord SetDiff [only-in-a only-in-b]
@@ -79,9 +79,9 @@
    " "
    (-> []
        (cond-> (seq only-in-a) (conj (str "expected to contain " (pluralize "key" only-in-a) ": "
-                                          (flatten-when-single only-in-a) ", but not found.")))
+                                          (pr-str (flatten-when-single only-in-a)) ", but not found.")))
        (cond-> (seq only-in-b) (conj (str "contained " (pluralize "key" only-in-b) ": "
-                                          (flatten-when-single only-in-b) ", but not expected"))))))
+                                          (pr-str (flatten-when-single only-in-b)) ", but not expected"))))))
 
 (defrecord MapEntryDiff [only-in-a only-in-b]
   Report
@@ -89,7 +89,7 @@
 
 (defn map-value-diff-report
   [k v]
-  (apply str k " "  (report v)))
+  (apply str (pr-str k) " "  (report v)))
 
 (defrecord MapValueDiff [k v]
   Report
@@ -126,7 +126,7 @@
 
 (defn report-vector
   [diff]
-  (map (fn [[k v]] (apply str k " "  (report v))) diff))
+  (map (fn [[k v]] (apply str (pr-str k) " " (report v))) diff))
 
 (defrecord VectorDiff [diff]
   Report
