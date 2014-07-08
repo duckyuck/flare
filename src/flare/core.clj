@@ -106,7 +106,7 @@
 (defn diff-map-values
   [a b]
   (->> (clojure.set/intersection (set (keys a)) (set (keys b)))
-       (map (fn [k] [k (diff (a k) (b k))]))
+       (map (fn [k] [k (diff (get a k) (get b k))]))
        (filter second)
        (map (fn [[k v]] (MapValueDiff. k v)))))
 
