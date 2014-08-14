@@ -59,9 +59,14 @@
   (clojure.string/join
    " "
    (-> []
-       (cond-> (seq only-in-a) (conj (str "expected to contain: " (pr-str (flatten-when-single only-in-a)) ", but not found.")))
-       (cond-> (seq only-in-b) (conj (str "contained: " (pr-str (flatten-when-single only-in-b)) ", but not expected"))))))
-
+       (cond-> (seq only-in-a)
+               (conj (str "expected to contain: "
+                          (pr-str (flatten-when-single only-in-a))
+                          ", but not found.")))
+       (cond-> (seq only-in-b)
+               (conj (str "contained: "
+                          (pr-str (flatten-when-single only-in-b))
+                          ", but not expected"))))))
 
 (defrecord SetDiff [only-in-a only-in-b]
   Report
@@ -78,10 +83,16 @@
   (clojure.string/join
    " "
    (-> []
-       (cond-> (seq only-in-a) (conj (str "expected to contain " (pluralize "key" only-in-a) ": "
-                                          (pr-str (flatten-when-single only-in-a)) ", but not found.")))
-       (cond-> (seq only-in-b) (conj (str "contained " (pluralize "key" only-in-b) ": "
-                                          (pr-str (flatten-when-single only-in-b)) ", but not expected"))))))
+       (cond-> (seq only-in-a)
+               (conj (str "expected to contain "
+                          (pluralize "key" only-in-a) ": "
+                          (pr-str (flatten-when-single only-in-a))
+                          ", but not found.")))
+       (cond-> (seq only-in-b)
+               (conj (str "contained "
+                          (pluralize "key" only-in-b) ": "
+                          (pr-str (flatten-when-single only-in-b))
+                          ", but not expected"))))))
 
 (defrecord MapEntryDiff [only-in-a only-in-b]
   Report
@@ -121,7 +132,6 @@
     (when-not (empty? diffs)
       (MapDiffs. (set diffs)))))
 
-
 ;; Vector
 
 (defn report-vector
@@ -138,7 +148,6 @@
                     (map-indexed (fn [i [a b]] (when (not= a b) [i (diff a b)])))
                     (remove nil?)
                     (into {}))))
-
 
 ;; String
 
