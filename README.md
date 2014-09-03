@@ -6,7 +6,7 @@ Latest version is `[flare "0.2.2"]`.
 
 ## Usage
 
-Flare is activated by calling `flare.clojure-test/install!`.
+Flare is activated by calling `flare.clojure-test/install!` (for use with `clojure.test`) or `flare.midje/install!` (for use with `midje`).
 
 To use Flare with [Leiningen](http://leiningen.org/), merge the following with your project.clj:
 
