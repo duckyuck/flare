@@ -1,7 +1,7 @@
 (ns flare.core-test
   (:require [clojure.test :refer [is deftest testing]]
             [flare.core :refer :all])
-  (:import [flare.core AtomDiff SetDiff MapKeysDiff]))
+  (:import [flare.core AtomDiff SetDiff MapKeysDiff StringDiffClansi]))
 
 (deftest flatten-keys-test
 
@@ -116,7 +116,10 @@
            nil))
 
     (is (= (diff "foo" nil)
-           [(AtomDiff. "foo" nil)]))))
+           [(AtomDiff. "foo" nil)]))
+
+    (is (= (diff "foo" "fjoo")
+           [(StringDiffClansi. (clansi-diff "foo" "fjoo"))]))))
 
 (deftest report-test
 

@@ -166,16 +166,20 @@
   [diff]
   (->> diff
        (map #(clansi/style (.text %) (diff-colors (.operation %))))
-       (apply str "strings differ: ")))
+       (apply str "string differ: ")))
 
 (defrecord StringDiffClansi [diff]
   Report
   (report [_] (report-string-clansi diff)))
 
+(defn clansi-diff
+  [a b]
+  (.diff_main (diff_match_patch.) a b))
+
 (defn diff-string
   [a b]
   (if (= (type b) String)
-    (StringDiffClansi. (.diff_main (diff_match_patch.) a b))
+    [(StringDiffClansi. (clansi-diff a b))]
     (diff-atom a b)))
 
 (extend-protocol Diff
