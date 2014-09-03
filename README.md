@@ -2,11 +2,11 @@
 
 Flare brings enlightened failure reports to your [clojure.test](http://richhickey.github.io/clojure/clojure.test-api.html) and [midje](https://github.com/marick/Midje) tests.
 
-Latest version is `[flare "0.2.2"]`.
+Latest version is `0.3.0`.
 
-## Usage
+## Usage with clojure.test
 
-Flare is activated by calling `flare.clojure-test/install!` (for use with `clojure.test`) or `flare.midje/install!` (for use with `midje`).
+Add `[flare/flare-clojure-test "0.3.0"]` to your development `:dependencies` in your `project.clj`. Flare is activated by calling `flare.clojure-test/install!`.
 
 To use Flare with [Leiningen](http://leiningen.org/), merge the following with your project.clj:
 
@@ -18,7 +18,19 @@ To use Flare with [Leiningen](http://leiningen.org/), merge the following with y
     (flare.clojure-test/install!)]}}}
 ```
 
-To use with midje, require and invoke `install!` from the `flare.midje` namespace.
+## Usage with midje
+
+Add `[flare/flare-midje "0.3.0"]` to your development `:dependencies` in your `project.clj`. Flare is activated by calling `flare.midje/install!`.
+
+To use Flare with [Leiningen](http://leiningen.org/), merge the following with your project.clj:
+
+```clojure
+{:profiles
+ {:dev
+  {:injections
+   [(require 'flare.midje)
+    (flare.midje/install!)]}}}
+```
 
 Run your tests, using your favourite test runner, and enjoy the enlightenment Flare brings to your failing tests.
 
