@@ -8,10 +8,7 @@
   ([opts]
      (defn print-diff
        [diff]
-       (let [reports (flare/generate-reports diff)]
-         (println "")
-         (doseq [report reports]
-           (println report))))
+       (println "\n" (flare/generate-reports diff)))
 
      (defmethod ct/report :fail [m]
        (ct/with-test-out

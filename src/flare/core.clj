@@ -1,7 +1,7 @@
 (ns flare.core
   (:require [clojure.data :refer [equality-partition]]
             [clansi :as clansi])
-  (:import [clojure.lang PersistentHashSet PersistentArrayMap IPersistentVector]
+  (:import [clojure.lang PersistentHashSet PersistentArrayMap]
            [name.fraser.neil.plaintext diff_match_patch$Operation]
            [name.fraser.neil.plaintext diff_match_patch]))
 
@@ -32,15 +32,47 @@
       (diff-similar a b)
       (diff-atom a b))))
 
-(defn ->seq
-  [v]
-  (if (sequential? v)
-    v
-    [v]))
+(defn map-and-not-report?
+  [m]
+  (and (map? m) (not (satisfies? Report m))))
+
+(defn flatten-keys
+  ([coll]
+     (flatten-keys {} [] coll))
+  ([a ks coll]
+     (cond
+      (map-and-not-report? coll) (reduce into
+                                         (map (fn [[k v]]
+                                                (flatten-keys a (conj ks k) v))
+                                              (seq coll)))
+      (sequential? coll) (let [groups (group-by map-and-not-report? coll)
+                           m (first (groups true))
+                           rest (groups false)]
+                       (-> a
+                           (cond-> m (flatten-keys ks m))
+                           (cond-> (seq rest) (assoc ks rest))))
+      :else (throw (IllegalArgumentException. "coll must be vector or map")))))
+
+(defn join-with-newlines
+  [coll]
+  (clojure.string/join "\n" coll))
+
+(defn generate-report-for-keyed-diff
+  [[path diffs]]
+  (let [diffs (map report diffs)
+        indent-diffs? (and (seq path) (< 1 (count diffs)))]
+    (-> diffs
+        (cond->> indent-diffs? (map #(str "  " %)))
+        join-with-newlines
+        (cond->> (seq path) (str "in " (pr-str path) (if indent-diffs? "\n" " "))))))
 
 (defn generate-reports
-  [diff]
-  (->seq (report diff)))
+  [diffs]
+  (->> diffs
+       flatten-keys
+       (map generate-report-for-keyed-diff)
+       (clojure.string/join "\n")))
+
 
 ;; Atom
 
@@ -50,23 +82,19 @@
 
 (defn diff-atom
   [a b]
-  (AtomDiff. a b))
+  [(AtomDiff. a b)])
 
 ;; Set
 
 (defn report-set
   [only-in-a only-in-b]
-  (clojure.string/join
-   " "
-   (-> []
-       (cond-> (seq only-in-a)
-               (conj (str "expected to contain: "
-                          (pr-str (flatten-when-single only-in-a))
-                          ", but not found.")))
-       (cond-> (seq only-in-b)
-               (conj (str "contained: "
-                          (pr-str (flatten-when-single only-in-b))
-                          ", but not expected"))))))
+  (if (seq only-in-a)
+    (str "expected set to contain: "
+         (pr-str (flatten-when-single only-in-a))
+         ", but not found.")
+    (str "set contained: "
+         (pr-str (flatten-when-single only-in-b))
+         ", but not expected.")))
 
 (defrecord SetDiff [only-in-a only-in-b]
   Report
@@ -74,80 +102,58 @@
 
 (defn diff-set
   [a b]
-  (SetDiff. (clojure.set/difference a b) (clojure.set/difference b a)))
+  (let [only-in-a (clojure.set/difference a b)
+        only-in-b (clojure.set/difference b a)]
+    (-> []
+        (cond-> (seq only-in-a) (conj (SetDiff. only-in-a nil)))
+        (cond-> (seq only-in-b) (conj (SetDiff. nil only-in-b))))))
 
 ;; Map
 
-(defn report-map-entry-diff
+(defn report-map-keys-diff
   [only-in-a only-in-b]
-  (clojure.string/join
-   " "
-   (-> []
-       (cond-> (seq only-in-a)
-               (conj (str "expected to contain "
-                          (pluralize "key" only-in-a) ": "
-                          (pr-str (flatten-when-single only-in-a))
-                          ", but not found.")))
-       (cond-> (seq only-in-b)
-               (conj (str "contained "
-                          (pluralize "key" only-in-b) ": "
-                          (pr-str (flatten-when-single only-in-b))
-                          ", but not expected"))))))
+  (if (seq only-in-a)
+    (str "expected map to contain " (pluralize "key" only-in-a) ": "
+         (pr-str (flatten-when-single only-in-a))
+         ", but not found.")
+    (str "map contained " (pluralize "key" only-in-b) ": "
+         (pr-str (flatten-when-single only-in-b))
+         ", but not expected.")))
 
-(defrecord MapEntryDiff [only-in-a only-in-b]
+(defrecord MapKeysDiff [only-in-a only-in-b]
   Report
-  (report [_] (report-map-entry-diff only-in-a only-in-b)))
-
-(defn map-value-diff-report
-  [k v]
-  (apply str (pr-str k) " "  (report v)))
-
-(defrecord MapValueDiff [k v]
-  Report
-  (report [_] (map-value-diff-report k v)))
+  (report [_] (report-map-keys-diff only-in-a only-in-b)))
 
 (defn diff-map-keys
   [a b]
   (let [a-keys (set (keys a))
         b-keys (set (keys b))]
     (when (not= a-keys b-keys)
-      (MapEntryDiff. (clojure.set/difference a-keys b-keys)
-                     (clojure.set/difference b-keys a-keys)))))
+      (let [only-in-a (clojure.set/difference a-keys b-keys)
+            only-in-b (clojure.set/difference b-keys a-keys)]
+        (-> []
+            (cond-> (seq only-in-a) (conj (MapKeysDiff. only-in-a nil)))
+            (cond-> (seq only-in-b) (conj (MapKeysDiff. nil only-in-b))))))))
 
 (defn diff-map-values
   [a b]
   (->> (clojure.set/intersection (set (keys a)) (set (keys b)))
        (map (fn [k] [k (diff (get a k) (get b k))]))
        (filter second)
-       (map (fn [[k v]] (MapValueDiff. k v)))))
-
-(defrecord MapDiffs [diffs]
-  Report
-  (report [_] (map report diffs)))
+       (into {})))
 
 (defn diff-map
   [a b]
-  (let [diffs (remove nil? (cons (diff-map-keys a b)
-                                 (diff-map-values a b)))]
-    (when-not (empty? diffs)
-      (MapDiffs. (set diffs)))))
+  (remove empty? (cons (diff-map-values a b)
+                       (diff-map-keys a b))))
 
-;; Vector
-
-(defn report-vector
-  [diff]
-  (map (fn [[k v]] (apply str (pr-str k) " " (report v))) diff))
-
-(defrecord VectorDiff [diff]
-  Report
-  (report [_] (report-vector diff)))
+;; Sequential
 
 (defn diff-sequential
   [a b]
-  (VectorDiff. (->> (map vector a b)
-                    (map-indexed (fn [i [a b]] (when (not= a b) [i (diff a b)])))
-                    (remove nil?)
-                    (into {}))))
+  [(->> (map vector a b)
+        (keep-indexed (fn [i [a b]] (when (not= a b) [i (diff a b)])))
+        (into {}))])
 
 ;; String
 
