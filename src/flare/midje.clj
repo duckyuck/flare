@@ -6,7 +6,7 @@
 
 (defn install! []
 
-  (defn emit-diff-reports
+  (defn emit-reports
     [reports]
     (util/emit-one-line "")
     (doseq [report reports]
@@ -18,9 +18,9 @@
     [failure]
     (default-fail-emissioner failure)
     (when (= (:type failure) :actual-result-did-not-match-expected-value)
-      (-> (diff (:actual failure) (:expected-result failure))
-          generate-reports
-          emit-diff-reports)))
+      (some-> (diff (:actual failure) (:expected-result failure))
+              generate-reports
+              emit-reports)))
 
   (def emission-map (assoc default/emission-map
                       :fail flare-fail-emissioner))

@@ -70,8 +70,7 @@
   [diffs]
   (->> diffs
        flatten-keys
-       (map generate-report-for-keyed-diff)
-       (clojure.string/join "\n")))
+       (map generate-report-for-keyed-diff)))
 
 
 ;; Atom

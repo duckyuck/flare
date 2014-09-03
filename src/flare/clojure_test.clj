@@ -8,7 +8,8 @@
   ([opts]
      (defn print-diff
        [diff]
-       (println "\n" (flare/generate-reports diff)))
+       (println "")
+       (println (clojure.string/join "\n" (flare/generate-reports diff))))
 
      (defmethod ct/report :fail [m]
        (ct/with-test-out
@@ -18,7 +19,7 @@
          (when-let [message (:message m)] (println message))
          (println "expected:" (pr-str (:expected m)))
          (println "  actual:" (pr-str (:actual m)))
-         (if-let [diff (::difference m)]
+         (when-let [diff (::difference m)]
            (print-diff (::difference m)))))
 
      (defn diff
