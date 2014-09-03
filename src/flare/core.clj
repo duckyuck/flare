@@ -151,9 +151,11 @@
 
 (defn diff-sequential
   [a b]
-  [(->> (map vector a b)
-        (keep-indexed (fn [i [a b]] (when (not= a b) [i (diff a b)])))
-        (into {}))])
+  (let [diff (->> (map vector a b)
+                  (keep-indexed (fn [i [a b]] (when (not= a b) [i (diff a b)])))
+                  (into {}))]
+    (when (seq diff)
+      [diff])))
 
 ;; String
 

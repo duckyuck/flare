@@ -44,7 +44,10 @@
            [(AtomDiff. nil 1)]))
 
     (is (= (diff 1 nil)
-           [(AtomDiff. 1 nil)])))
+           [(AtomDiff. 1 nil)]))
+
+    (is (= (diff 1 2)
+           [(AtomDiff. 1 2)])))
 
   (testing "map"
 
