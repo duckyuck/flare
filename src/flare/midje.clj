@@ -18,7 +18,7 @@
     [failure]
     (default-fail-emissioner failure)
     (when (= (:type failure) :actual-result-did-not-match-expected-value)
-      (some-> (diff (:actual failure) (:expected-result failure))
+      (some-> (diff (:expected-result failure) (:actual failure))
               generate-reports
               emit-reports)))
 
