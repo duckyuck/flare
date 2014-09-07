@@ -70,6 +70,7 @@
   [diffs]
   (->> diffs
        flatten-keys
+       sort
        (map generate-report-for-keyed-diff)))
 
 
