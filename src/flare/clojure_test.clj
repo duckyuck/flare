@@ -26,8 +26,8 @@
        [args]
        (when (= 2 (count args))
          (let [args (if (= (:expected opts) :first)
-                      (reverse args)
-                      args)]
+                      args
+                      (reverse args))]
            (apply flare/diff args))))
 
      (defmethod ct/assert-expr '=
