@@ -1,3 +1,9 @@
+## 0.2.5
+
+Bugfixes:
+
+  - Swallowing all exceptions (from `diff` and `generate-reports`) to insulating users from having exceptions from flare blow up in their faces.
+
 ## 0.2.4
 
 Features:
