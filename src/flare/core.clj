@@ -27,10 +27,12 @@
 
 (defn diff
   [a b]
-  (when-not (= a b)
-    (if (= (equality-partition a) (equality-partition b))
-      (diff-similar a b)
-      (diff-atom a b))))
+  (try
+    (when-not (= a b)
+      (if (= (equality-partition a) (equality-partition b))
+        (diff-similar a b)
+        (diff-atom a b)))
+    (catch Exception e)))
 
 (defn map-and-not-report?
   [m]
@@ -68,11 +70,12 @@
 
 (defn generate-reports
   [diffs]
-  (->> diffs
-       flatten-keys
-       sort
-       (map generate-report-for-keyed-diff)))
-
+  (try
+    (->> diffs
+         flatten-keys
+         sort
+         (map generate-report-for-keyed-diff))
+    (catch Exception e)))
 
 ;; Atom
 

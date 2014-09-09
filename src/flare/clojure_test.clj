@@ -20,7 +20,7 @@
          (println "expected:" (pr-str (:expected m)))
          (println "  actual:" (pr-str (:actual m)))
          (when-let [diff (::difference m)]
-           (print-diff (::difference m)))))
+           (print-diff diff))))
 
      (defn diff
        [args]

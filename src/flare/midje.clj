@@ -8,9 +8,10 @@
 
   (defn emit-reports
     [reports]
-    (util/emit-one-line "")
-    (doseq [report reports]
-      (util/emit-one-line report)))
+    (when (seq reports)
+      (util/emit-one-line "")
+      (doseq [report reports]
+        (util/emit-one-line report))))
 
   (def default-fail-emissioner (:fail default/emission-map))
 
