@@ -20,8 +20,8 @@
     coll))
 
 (defn pluralize
-  [s n]
-  (if (and (sequential? n) (< 1 (count n)))
+  [s coll]
+  (if (and (sequential? coll) (< 1 (count coll)))
     (str s "s")
     s))
 
@@ -61,12 +61,12 @@
 
 (defn generate-report-for-keyed-diff
   [[path diffs]]
-  (let [diffs (map report diffs)
-        indent-diffs? (and (seq path) (< 1 (count diffs)))]
-    (-> diffs
-        (cond->> indent-diffs? (map #(str "  " %)))
+  (let [reports (flatten (map report diffs))
+        indent-reports? (and (seq path) (< 1 (count reports)))]
+    (-> reports
+        (cond->> indent-reports? (map #(str "  " %)))
         join-with-newlines
-        (cond->> (seq path) (str "in " (pr-str path) (if indent-diffs? "\n" " "))))))
+        (cond->> (seq path) (str "in " (pr-str path) (if indent-reports? "\n" " "))))))
 
 (defn generate-reports
   [diffs]
@@ -81,7 +81,7 @@
 
 (defrecord AtomDiff [a b]
   Report
-  (report [_] (str "expected: " (pr-str a) ", was " (pr-str b))))
+  (report [_] (str "expected " (pr-str a) ", was " (pr-str b))))
 
 (defn diff-atom
   [a b]
@@ -154,11 +154,12 @@
 
 (defn report-sequential-count-diff
   [excess-idx only-in-a only-in-b]
-  [(str "expected length of sequence " (+ excess-idx (count only-in-a))
-        ", was " (+ excess-idx (count only-in-b)) ".")
-   (if (seq only-in-a)
-     (str "Excess in expected: " (pr-str only-in-a))
-     (str "Excess in actual: " (pr-str only-in-b)))])
+  (let [missing-count (count (or (seq only-in-a) (seq only-in-b)))]
+    [(str "expected length of sequence is " (+ (count only-in-a) excess-idx)
+          ", actual length is " (+ (count only-in-b) excess-idx) ".")
+     (if (seq only-in-a)
+       (str "actual is missing " missing-count " " (pluralize "element" only-in-a) ": " (pr-str only-in-a))
+       (str "actual has " missing-count " " (pluralize "element" only-in-b) " in excess: " (pr-str only-in-b)))]))
 
 (defrecord SequentialSizeDiff [excess-idx only-in-a only-in-b]
   Report
