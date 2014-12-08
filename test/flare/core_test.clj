@@ -1,7 +1,7 @@
 (ns flare.core-test
   (:require [clojure.test :refer [is deftest testing]]
             [flare.core :refer :all])
-  (:import [flare.core AtomDiff SetDiff MapKeysDiff SequentialSizeDiff StringDiffClansi]))
+  (:import [flare.core AtomDiff SetDiff MapKeysDiff SequentialSizeDiff StringDiff]))
 
 (deftest flatten-keys-test
 
@@ -123,14 +123,21 @@
     (is (= (diff "foo" nil)
            [(AtomDiff. "foo" nil)]))
 
+    (let [])
     (is (= (diff "foo" "fjoo")
-           [(StringDiffClansi. (clansi-diff "foo" "fjoo"))]))))
+           [(StringDiff. (diff-match-patch-string "foo" "fjoo") "foo" "fjoo")]))))
 
 (deftest report-test
 
   (testing "atom"
     (is (= (report (AtomDiff. "a" 1))
            "expected \"a\", was 1")))
+
+  (testing "string"
+    (is (= (report (StringDiff. (diff-match-patch-string "foo bar" "fool berr") "foo bar" "fool berr"))
+           ["strings differ (66% similarity)"
+            "expected: \"foo(-) b(a)(--)r\""
+            "actual:   \"foo(l) b(-)(er)r\""])))
 
   (testing "map keys"
 

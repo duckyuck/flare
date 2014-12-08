@@ -1,9 +1,7 @@
 (ns flare.core
-  (:require [clojure.data :refer [equality-partition]]
-            [clansi :as clansi])
-  (:import [clojure.lang PersistentHashSet PersistentArrayMap]
-           [name.fraser.neil.plaintext diff_match_patch$Operation]
-           [name.fraser.neil.plaintext diff_match_patch]))
+  (:require [clojure.data :refer [equality-partition]])
+  (:import [name.fraser.neil.plaintext diff_match_patch]
+           [name.fraser.neil.plaintext diff_match_patch$Operation]))
 
 (defprotocol Diff
   (diff-similar [a b]))
@@ -186,29 +184,79 @@
 
 ;; String
 
-(def diff-colors
-  {diff_match_patch$Operation/EQUAL :reset
-   diff_match_patch$Operation/INSERT :cyan
-   diff_match_patch$Operation/DELETE :red})
+(defn string->dash
+  [s]
+  (apply str (repeat (count s) "-")))
 
-(defn report-string-clansi
-  [diff]
+(defn enclose-in-parenthesis
+  [s]
+  (str "(" s ")"))
+
+(def diff-conversions
+  {diff_match_patch$Operation/EQUAL identity
+   diff_match_patch$Operation/INSERT (comp enclose-in-parenthesis identity)
+   diff_match_patch$Operation/DELETE (comp enclose-in-parenthesis string->dash)})
+
+(defn flip-insert-delete
+  [operation]
+  (condp = operation
+    diff_match_patch$Operation/INSERT diff_match_patch$Operation/DELETE
+    diff_match_patch$Operation/DELETE diff_match_patch$Operation/INSERT
+    operation))
+
+(defn diff-operation
+  [flip-insert-delete? diff]
+  (let [operation (.operation diff)]
+    (if flip-insert-delete?
+      (flip-insert-delete operation)
+      operation)))
+
+(defn converter
+  [flip-insert-delete?]
+  (fn [diff]
+    (diff-conversions (diff-operation flip-insert-delete? diff))))
+
+(defn diff->string
+  [diff-converter diff]
+  (let [convert (diff-converter diff)]
+    (convert (.text diff))))
+
+(defn generate-string-diff
+  [diff converter]
   (->> diff
-       (map #(clansi/style (.text %) (diff-colors (.operation %))))
-       (apply str "string differ: ")))
+       (map (partial diff->string converter))
+       (apply str)))
 
-(defrecord StringDiffClansi [diff]
+(defn levenshtein-distance
+  [diff]
+  (.diff_levenshtein (diff_match_patch.) diff))
+
+(defn string-similarity-percentage
+  [diff a b]
+  (let [longest (max (count a) (count b))
+        distance (levenshtein-distance diff)]
+    (long (* (/ (- longest distance)
+                longest)
+             100))))
+
+(defn report-string-diff
+  [diff a b]
+  [(str "strings differ (" (string-similarity-percentage diff a b) "% similarity)")
+   (str "expected: " (pr-str (generate-string-diff diff (converter true))))
+   (str "actual:   " (pr-str (generate-string-diff diff (converter false))))])
+
+(defrecord StringDiff [diff a b]
   Report
-  (report [_] (report-string-clansi diff)))
+  (report [_] (report-string-diff diff a b)))
 
-(defn clansi-diff
+(defn diff-match-patch-string
   [a b]
   (.diff_main (diff_match_patch.) a b))
 
 (defn diff-string
   [a b]
   (if (= (type b) String)
-    [(StringDiffClansi. (clansi-diff a b))]
+    [(StringDiff. (diff-match-patch-string a b) a b)]
     (diff-atom a b)))
 
 (extend-protocol Diff
