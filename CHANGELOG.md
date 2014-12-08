@@ -1,3 +1,9 @@
+
+## 0.2.5
+
+Bugfixes:
+  - Sequences of unequal sizes now generate a diff.
+
 ## 0.2.5
 
 Bugfixes:
