@@ -1,7 +1,13 @@
+## 0.2.7
 
-## 0.2.5
+Changes:
+
+  - Changed how string diffs are reported. No more ANSI colored diffs.
+
+## 0.2.6
 
 Bugfixes:
+
   - Sequences of unequal sizes now generate a diff.
 
 ## 0.2.5
