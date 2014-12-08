@@ -152,13 +152,36 @@
 
 ;; Sequential
 
+(defn report-sequential-count-diff
+  [excess-idx only-in-a only-in-b]
+  [(str "expected length of sequence " (+ excess-idx (count only-in-a))
+        ", was " (+ excess-idx (count only-in-b)) ".")
+   (if (seq only-in-a)
+     (str "Excess in expected: " (pr-str only-in-a))
+     (str "Excess in actual: " (pr-str only-in-b)))])
+
+(defrecord SequentialSizeDiff [excess-idx only-in-a only-in-b]
+  Report
+  (report [_] (report-sequential-count-diff excess-idx only-in-a only-in-b)))
+
+(defn diff-sequential-by-index
+  [a b]
+  (->> (map vector a b)
+       (keep-indexed (fn [i [a b]] (when-not (= a b) [i (diff a b)])))
+       (into {})))
+
+(defn diff-sequential-size
+  [a b]
+  (when-not (= (count a) (count b))
+    (let [excess-idx (min (count a) (count b))]
+      [(SequentialSizeDiff. excess-idx
+        (drop excess-idx a)
+        (drop excess-idx b))])))
+
 (defn diff-sequential
   [a b]
-  (let [diff (->> (map vector a b)
-                  (keep-indexed (fn [i [a b]] (when (not= a b) [i (diff a b)])))
-                  (into {}))]
-    (when (seq diff)
-      [diff])))
+  (remove empty? (cons (diff-sequential-by-index a b)
+                       (diff-sequential-size a b))))
 
 ;; String
 

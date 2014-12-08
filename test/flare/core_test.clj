@@ -1,7 +1,7 @@
 (ns flare.core-test
   (:require [clojure.test :refer [is deftest testing]]
             [flare.core :refer :all])
-  (:import [flare.core AtomDiff SetDiff MapKeysDiff StringDiffClansi]))
+  (:import [flare.core AtomDiff SetDiff MapKeysDiff SequentialSizeDiff StringDiffClansi]))
 
 (deftest flatten-keys-test
 
@@ -91,9 +91,11 @@
     (is (= (diff [0 1 2] [0 1 42])
            [{2 [(AtomDiff. 2 42)]}]))
 
-    ;; FIXME - currently reports empty diff
-    #_(is (not= (diff [0 1 2 3] [0 1 2])
-              (VectorDiff. {}))))
+    (is (= (diff [:a :b] [:a :b :c :d])
+           [(SequentialSizeDiff. 2 [] [:c :d])]))
+
+    (is (= (diff [:a :b :c :d] [:a :b])
+           [(SequentialSizeDiff. 2 [:c :d] [])])))
 
   (testing "set"
 
