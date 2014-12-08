@@ -6,6 +6,7 @@
   :dependencies [[org.clojure/clojure "1.6.0"]
                  [org.clojars.brenton/google-diff-match-patch "0.1"]]
   :profiles {:provided {:dependencies [[midje "1.6.3"]]}
-             :dev {:injections [(require 'flare.clojure-test)
+             :dev {:dependencies [[org.clojure/test.check "0.6.1"]]
+                   :injections [(require 'flare.clojure-test)
                                 (flare.clojure-test/install!)]}}
   :lein-release {:deploy-via :clojars})

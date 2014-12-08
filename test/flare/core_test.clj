@@ -1,7 +1,12 @@
 (ns flare.core-test
-  (:require [clojure.test :refer [is deftest testing]]
-            [flare.core :refer :all])
+  (:require [flare.core :refer :all]
+            [clojure.test.check :as tc]
+            [clojure.test.check.clojure-test :refer [defspec]]
+            [clojure.test.check.generators :as gen]
+            [clojure.test.check.properties :as prop]
+            [clojure.test :refer [is deftest testing]])
   (:import [flare.core AtomDiff SetDiff MapKeysDiff SequentialSizeDiff StringDiff]))
+
 
 (deftest flatten-keys-test
 
@@ -34,6 +39,22 @@
                (flatten-keys 1))))
 
 (deftest diff-test
+
+  (defspec diff-never-returns-a-diff-when-inputs-are-equal
+    100
+    (prop/for-all [v gen/any]
+                  (= (diff v v) nil)))
+
+  (defn distinct-values
+  [& generators]
+  (gen/such-that (comp (partial = (count generators)) count set)
+                 (apply gen/tuple generators)))
+
+  ;; TODO - Implement generator that generates similiar but unequal values. This test is probably futile.
+  (defspec diff-always-returns-a-diff-when-inputs-are-not-equal
+    100
+    (prop/for-all [[a b] (distinct-values gen/any gen/any)]
+                                 (not (nil? (diff a b)))))
 
   (testing "nil"
 
