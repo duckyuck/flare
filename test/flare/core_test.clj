@@ -130,9 +130,9 @@
 
   (testing "atom"
     (is (= (report (AtomDiff. "a" 1))
-           "expected: \"a\", was 1")))
+           "expected \"a\", was 1")))
 
-  (testing "map entry"
+  (testing "map keys"
 
     (testing "only in a"
       (is (= (report (MapKeysDiff. [:a] nil))
@@ -158,4 +158,20 @@
 
     (testing "nil values"
       (is (= (report (SetDiff. [nil] nil))
-             "expected set to contain: nil, but not found.")))))
+             "expected set to contain: nil, but not found."))))
+
+  (testing "sequential"
+
+    (testing "actual is missing elements"
+      (is (= (report (SequentialSizeDiff. 3 [:a :b] []))
+             ["expected length of sequence is 5, actual length is 3."
+              "actual is missing 2 elements: [:a :b]"])))
+
+    (testing "actual has elements in excess"
+      (is (= (report (SequentialSizeDiff. 3 [] [:a :b]))
+             ["expected length of sequence is 3, actual length is 5."
+              "actual has 2 elements in excess: [:a :b]"])))))
+
+(deftest generate-report-for-keyed-diff-test
+  (is (= (generate-report-for-keyed-diff [[:a :b :c] [(AtomDiff. 1 2)]])
+         "in [:a :b :c] expected 1, was 2")))
