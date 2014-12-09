@@ -180,8 +180,7 @@
 (defn diff-sequential
   [a b]
   (remove empty? (cons (diff-sequential-by-index a b)
-                       []; (diff-sequential-size a b)
-                       )))
+                       (diff-sequential-size a b))))
 
 ;; String
 
