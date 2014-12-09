@@ -10,6 +10,10 @@
 
 (def diff diff*)
 
+(defn distinct-values
+  [& generators]
+  (gen/such-that (comp (partial = (count generators)) count set)
+                 (apply gen/tuple generators)))
 
 (deftest flatten-keys-test
 
@@ -47,11 +51,6 @@
     100
     (prop/for-all [v gen/any]
                   (= (diff v v) nil)))
-
-  (defn distinct-values
-  [& generators]
-  (gen/such-that (comp (partial = (count generators)) count set)
-                 (apply gen/tuple generators)))
 
   ;; TODO - Implement generator that generates similiar but unequal values. This test is probably futile.
   (defspec diff-always-returns-a-diff-when-inputs-are-not-equal
@@ -206,3 +205,8 @@
 (deftest generate-report-for-keyed-diff-test
   (is (= (generate-report-for-keyed-diff [[:a :b :c] [(AtomDiff. 1 2)]])
          "in [:a :b :c] expected 1, was 2")))
+
+(defspec generate-report-always-returns-non-empty-list-when-given-diffs
+  100
+  (prop/for-all [[a b] (distinct-values gen/any gen/any)]
+                (not-empty (generate-reports* (diff a b)))))
