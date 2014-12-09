@@ -23,13 +23,17 @@
     (str s "s")
     s))
 
+(defn diff*
+  [a b]
+  (when-not (= a b)
+    (if (= (equality-partition a) (equality-partition b))
+      (diff-similar a b)
+      (diff-atom a b))))
+
 (defn diff
   [a b]
   (try
-    (when-not (= a b)
-      (if (= (equality-partition a) (equality-partition b))
-        (diff-similar a b)
-        (diff-atom a b)))
+    (diff* a b)
     (catch Exception e)))
 
 (defn map-and-not-report?
@@ -66,13 +70,17 @@
         join-with-newlines
         (cond->> (seq path) (str "in " (pr-str path) (if indent-reports? "\n" " "))))))
 
+(defn generate-reports*
+  [diffs]
+  (->> diffs
+       flatten-keys
+       sort
+       (map generate-report-for-keyed-diff)))
+
 (defn generate-reports
   [diffs]
   (try
-    (->> diffs
-         flatten-keys
-         sort
-         (map generate-report-for-keyed-diff))
+    (generate-reports diffs)
     (catch Exception e)))
 
 ;; Atom
