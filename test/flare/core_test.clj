@@ -1,11 +1,14 @@
 (ns flare.core-test
-  (:require [flare.core :refer :all]
+  (:require [flare.core :refer [diff* generate-reports* report flatten-keys diff-match-patch-string
+                                generate-report-for-keyed-diff]]
             [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
             [clojure.test :refer [is deftest testing]])
   (:import [flare.core AtomDiff SetDiff MapKeysDiff SequentialSizeDiff StringDiff]))
+
+(def diff diff*)
 
 
 (deftest flatten-keys-test
