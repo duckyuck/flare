@@ -80,7 +80,7 @@
 (defn generate-reports
   [diffs]
   (try
-    (generate-reports diffs)
+    (generate-reports* diffs)
     (catch Exception e)))
 
 ;; Atom
