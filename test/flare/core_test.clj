@@ -1,5 +1,5 @@
 (ns flare.core-test
-  (:require [flare.core :refer [diff* generate-reports* report flatten-keys diff-match-patch-string
+  (:require [flare.core :refer [diff* generate-reports* report flatten-keys create-string-diff
                                 generate-report-for-keyed-diff]]
             [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :refer [defspec]]
@@ -148,7 +148,7 @@
 
     (let [])
     (is (= (diff "foo" "fjoo")
-           [(StringDiff. (diff-match-patch-string "foo" "fjoo") "foo" "fjoo")]))))
+           [(StringDiff. (create-string-diff "foo" "fjoo"))]))))
 
 (deftest report-test
 
@@ -157,10 +157,10 @@
            "expected \"a\", was 1")))
 
   (testing "string"
-    (is (= (report (StringDiff. (diff-match-patch-string "foo bar" "fool berr") "foo bar" "fool berr"))
-           ["strings differ (66% similarity)"
-            "expected: \"foo(-) b(a)(--)r\""
-            "actual:   \"foo(l) b(-)(er)r\""])))
+    (is (= (report (StringDiff. (create-string-diff "foo bar" "fool berr")))
+           ["strings have 2 differences (66% similarity)"
+            "expected: \"foo(-) b(a-)r\""
+            "actual:   \"foo(l) b(er)r\""])))
 
   (testing "map keys"
 

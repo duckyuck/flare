@@ -17,11 +17,23 @@
     (first coll)
     coll))
 
-(defn pluralize
-  [s coll]
-  (if (and (sequential? coll) (< 1 (count coll)))
-    (str s "s")
-    s))
+(defprotocol Pluralizable
+  (pluralize [o noun]))
+
+(extend-protocol Pluralizable
+  java.util.Collection
+  (pluralize [this noun]
+    (pluralize (count this) noun))
+
+  java.lang.Integer
+  (pluralize [this noun]
+    (pluralize (long this) noun))
+
+  java.lang.Long
+  (pluralize [this noun]
+    (if (> this 1)
+      (str noun "s")
+      noun)))
 
 (defn diff*
   [a b]
@@ -122,10 +134,10 @@
 (defn report-map-keys-diff
   [only-in-a only-in-b]
   (if (seq only-in-a)
-    (str "expected map to contain " (pluralize "key" only-in-a) ": "
+    (str "expected map to contain " (pluralize only-in-a "key") ": "
          (pr-str (flatten-when-single only-in-a))
          ", but not found.")
-    (str "map contained " (pluralize "key" only-in-b) ": "
+    (str "map contained " (pluralize only-in-b "key") ": "
          (pr-str (flatten-when-single only-in-b))
          ", but not expected.")))
 
@@ -164,8 +176,8 @@
     [(str "expected length of sequence is " (+ (count only-in-a) excess-idx)
           ", actual length is " (+ (count only-in-b) excess-idx) ".")
      (if (seq only-in-a)
-       (str "actual is missing " missing-count " " (pluralize "element" only-in-a) ": " (pr-str only-in-a))
-       (str "actual has " missing-count " " (pluralize "element" only-in-b) " in excess: " (pr-str only-in-b)))]))
+       (str "actual is missing " missing-count " " (pluralize only-in-a "element") ": " (pr-str only-in-a))
+       (str "actual has " missing-count " " (pluralize only-in-b "element") " in excess: " (pr-str only-in-b)))]))
 
 (defrecord SequentialSizeDiff [excess-idx only-in-a only-in-b]
   Report
@@ -192,79 +204,165 @@
 
 ;; String
 
-(defn string->dash
-  [s]
-  (apply str (repeat (count s) "-")))
+(defn diff-match-patch-string
+  [a b]
+  (let [dmp (diff_match_patch.)
+        diff (.diff_main dmp a b)]
+    (.diff_cleanupSemantic dmp diff)
+    diff))
 
-(defn enclose-in-parenthesis
-  [s]
-  (str "(" s ")"))
+(def operation->keyword
+  {diff_match_patch$Operation/EQUAL :equal
+   diff_match_patch$Operation/INSERT :insert
+   diff_match_patch$Operation/DELETE :delete})
 
-(def diff-conversions
-  {diff_match_patch$Operation/EQUAL identity
-   diff_match_patch$Operation/INSERT (comp enclose-in-parenthesis identity)
-   diff_match_patch$Operation/DELETE (comp enclose-in-parenthesis string->dash)})
+(defn diff->tuple
+  [diff]
+  [(operation->keyword (.operation diff)) (.text diff)])
 
-(defn flip-insert-delete
-  [operation]
-  (condp = operation
-    diff_match_patch$Operation/INSERT diff_match_patch$Operation/DELETE
-    diff_match_patch$Operation/DELETE diff_match_patch$Operation/INSERT
-    operation))
+(defn partition-between
+  [pred? coll]
+  (->> (map pred? coll (rest coll))
+       (reductions not= true)
+       (map list coll)
+       (partition-by second)
+       (map (partial map first))))
 
-(defn diff-operation
-  [flip-insert-delete? diff]
-  (let [operation (.operation diff)]
-    (if flip-insert-delete?
-      (flip-insert-delete operation)
-      operation)))
+(defn insert-operation?
+  [[operation _]]
+  (= operation :insert))
 
-(defn converter
-  [flip-insert-delete?]
-  (fn [diff]
-    (diff-conversions (diff-operation flip-insert-delete? diff))))
+(defn delete-operation?
+  [[operation _]]
+  (= operation :delete))
 
-(defn diff->string
-  [diff-converter diff]
-  (let [convert (diff-converter diff)]
-    (convert (.text diff))))
+(defn equal-operation?
+  [[operation _]]
+  (= operation :equal))
 
-(defn generate-string-diff
-  [diff converter]
-  (->> diff
-       (map (partial diff->string converter))
-       (apply str)))
+(defn change-operation?
+  [diff]
+  (or (insert-operation? diff) (delete-operation? diff)))
+
+(defn change-operations?
+  [prev curr]
+  (and (change-operation? prev) (change-operation? curr)))
+
+(defn find-first
+  [pred coll]
+  (first (filter pred coll)))
+
+(defn consolidate-diffs
+  [diffs]
+  (if (= 1 (count diffs))
+    (first diffs)
+    [:change [(find-first insert-operation? diffs)
+              (find-first delete-operation? diffs)]]))
+
+(defn diff-tuples
+  [a b]
+  (->> (diff-match-patch-string a b)
+       (map diff->tuple)
+       (partition-between (complement change-operations?))
+       (map consolidate-diffs)))
+
+(defn count-differences
+  [diff-tuples]
+  (->> diff-tuples
+       (remove equal-operation?)
+       count))
 
 (defn levenshtein-distance
   [diff]
   (.diff_levenshtein (diff_match_patch.) diff))
 
-(defn string-similarity-percentage
-  [diff a b]
+(defn string-similarity
+  [a b]
   (let [longest (max (count a) (count b))
-        distance (levenshtein-distance diff)]
-    (long (* (/ (- longest distance)
-                longest)
-             100))))
+        distance (levenshtein-distance (diff-match-patch-string a b))]
+    (/ (- longest distance)
+       longest)))
+
+(defn create-string-diff
+  [a b]
+  (let [a->b (diff-tuples a b)
+        b->a (diff-tuples b a)]
+    {:a b
+     :b b
+     :a->b a->b
+     :b->a b->a
+     :differences-count (count-differences a->b)
+     :similarity (string-similarity a b)}))
+
+(def render-tuple-dispatch first)
+
+(defmulti render-tuple #'render-tuple-dispatch)
+
+(defn enclose-in-parenthesis
+  [s]
+  (str "(" s ")"))
+
+(defn dashes
+  [n]
+  (apply str (repeat n "-")))
+
+(defn string->dashes
+  [s]
+  (-> s count dashes))
+
+(defmethod render-tuple :insert
+  [[_ s]]
+  (-> s
+      string->dashes
+      enclose-in-parenthesis))
+
+(defmethod render-tuple :delete
+  [[_ s]]
+  (enclose-in-parenthesis s))
+
+(defn append-dashes
+  [s max]
+  (->> s
+       count
+       (- max)
+       dashes
+       (str s)))
+
+(defmethod render-tuple :change
+  [[_ [[_ insert] [_ delete]]]]
+  (-> delete
+      (append-dashes (count insert))
+      enclose-in-parenthesis))
+
+(defmethod render-tuple :default
+  [[_ s]]
+  s)
+
+(defn diff-tuples->string
+  [diff-tuples]
+  (->> diff-tuples
+       (map render-tuple)
+       (apply str)))
+
+(defn fraction->percent
+  [n]
+  (long (* n 100)))
 
 (defn report-string-diff
-  [diff a b]
-  [(str "strings differ (" (string-similarity-percentage diff a b) "% similarity)")
-   (str "expected: " (pr-str (generate-string-diff diff (converter true))))
-   (str "actual:   " (pr-str (generate-string-diff diff (converter false))))])
+  [{:keys [a->b b->a differences-count similarity]}]
+  [(str "strings have " differences-count (pluralize differences-count " difference") " "
+        "(" (fraction->percent similarity)  "% similarity)")
+   (str "expected: " (pr-str (diff-tuples->string a->b)))
+   (str "actual:   " (pr-str (diff-tuples->string b->a)))])
 
-(defrecord StringDiff [diff a b]
+(defrecord StringDiff [diff]
   Report
-  (report [_] (report-string-diff diff a b)))
-
-(defn diff-match-patch-string
-  [a b]
-  (.diff_main (diff_match_patch.) a b))
+  (report [_] (report-string-diff diff)))
 
 (defn diff-string
   [a b]
   (if (= (type b) String)
-    [(StringDiff. (diff-match-patch-string a b) a b)]
+    [(StringDiff. (create-string-diff a b))]
     (diff-atom a b)))
 
 (extend-protocol Diff
