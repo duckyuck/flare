@@ -1,13 +1,7 @@
 (ns flare.util)
 
-(defn flatten-when-single
-  [coll]
-  (if (= 1 (count coll))
-    (first coll)
-    coll))
-
 (defprotocol Pluralizable
-  (pluralize [o noun]))
+  (pluralize [this noun]))
 
 (extend-protocol Pluralizable
   java.util.Collection
@@ -23,3 +17,9 @@
     (if (> this 1)
       (str noun "s")
       noun)))
+
+(defn flatten-when-single
+  [coll]
+  (if (= 1 (count coll))
+    (first coll)
+    coll))

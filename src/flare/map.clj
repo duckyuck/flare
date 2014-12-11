@@ -4,7 +4,7 @@
             [flare.util :refer [pluralize flatten-when-single]]
             [clojure.set :as set]))
 
-(defn report-map-keys-diff
+(defn report-keys-diff
   [only-in-a only-in-b]
   (if (seq only-in-a)
     (str "expected map to contain " (pluralize only-in-a "key") ": "
@@ -16,9 +16,9 @@
 
 (defrecord MapKeysDiff [only-in-a only-in-b]
   Report
-  (report [_] (report-map-keys-diff only-in-a only-in-b)))
+  (report [_] (report-keys-diff only-in-a only-in-b)))
 
-(defn diff-map-keys
+(defn diff-keys
   [a b]
   (let [a-keys (set (keys a))
         b-keys (set (keys b))]
@@ -29,14 +29,10 @@
             (cond-> (seq only-in-a) (conj (MapKeysDiff. only-in-a nil)))
             (cond-> (seq only-in-b) (conj (MapKeysDiff. nil only-in-b))))))))
 
-(defn diff-map-values
+(defn diff-values
   [a b]
   (->> (set/intersection (set (keys a)) (set (keys b)))
        (map (fn [k] [k (diff* (get a k) (get b k))]))
        (filter second)
-       (into {})))
-
-(defn diff-map
-  [a b]
-  (remove empty? (cons (diff-map-values a b)
-                       (diff-map-keys a b))))
+       (into {})
+       vector))

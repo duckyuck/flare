@@ -1,6 +1,6 @@
 (ns flare.core
   (:require [flare.atom :as atom]
-            [flare.diff :refer [Diff] :as diff]
+            [flare.diff :refer [Diff compose-diffs] :as diff]
             [flare.map :as map]
             [flare.report]
             [flare.sequential :as sequential]
@@ -11,30 +11,22 @@
 
 (def generate-reports flare.report/generate-reports)
 
-(extend-protocol Diff
-  nil
-  (diff-similar [a b]
-    (atom/diff-atom a b))
+(def default-diffs
+  {nil              atom/diff-atom
+   java.lang.Object atom/diff-atom
+   java.lang.String string/diff-string
+   java.util.Set    set/diff-set
+   java.util.Map    (compose-diffs map/diff-values map/diff-keys)
+   java.util.List   (compose-diffs sequential/diff-size sequential/diff-by-index)})
 
-  java.util.Set
-  (diff-similar [a b]
-    (set/diff-set a b))
+(defn install!
+  ([type->diff]
+     (doseq [entry type->diff]
+       (apply install! entry)))
+  ([type diff-fn]
+     (extend type Diff {:diff-similar diff-fn})))
 
-  java.util.Map
-  (diff-similar [a b]
-    (map/diff-map a b))
-
-  java.util.List
-  (diff-similar [a b]
-    (sequential/diff-sequential a b))
-
-  java.lang.Object
-  (diff-similar [a b]
-    (atom/diff-atom a b))
-
-  java.lang.String
-  (diff-similar [a b]
-    (string/diff-string a b)))
+(install! default-diffs)
 
 ;; For backwards compatibility only. Used by Midje 1.7.x
 

@@ -3,7 +3,7 @@
             [flare.report :refer [Report]]
             [flare.util :refer [pluralize]]))
 
-(defn report-sequential-count-diff
+(defn report-size-diff
   [excess-idx only-in-a only-in-b]
   (let [missing-count (count (or (seq only-in-a) (seq only-in-b)))]
     [(str "expected length of sequence is " (+ (count only-in-a) excess-idx)
@@ -14,15 +14,9 @@
 
 (defrecord SequentialSizeDiff [excess-idx only-in-a only-in-b]
   Report
-  (report [_] (report-sequential-count-diff excess-idx only-in-a only-in-b)))
+  (report [_] (report-size-diff excess-idx only-in-a only-in-b)))
 
-(defn diff-sequential-by-index
-  [a b]
-  (->> (map vector a b)
-       (keep-indexed (fn [i [a b]] (when-not (= a b) [i (diff* a b)])))
-       (into {})))
-
-(defn diff-sequential-size
+(defn diff-size
   [a b]
   (when-not (= (count a) (count b))
     (let [excess-idx (min (count a) (count b))]
@@ -30,7 +24,9 @@
         (drop excess-idx a)
         (drop excess-idx b))])))
 
-(defn diff-sequential
+(defn diff-by-index
   [a b]
-  (remove empty? (cons (diff-sequential-by-index a b)
-                       (diff-sequential-size a b))))
+  (->> (map vector a b)
+       (keep-indexed (fn [i [a b]] (when-not (= a b) [i (diff* a b)])))
+       (into {})
+       vector))

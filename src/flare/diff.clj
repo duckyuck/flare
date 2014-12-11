@@ -5,6 +5,11 @@
 (defprotocol Diff
   (diff-similar [a b]))
 
+(defn compose-diffs
+  [& diff-fns]
+  (fn [a b]
+    (remove empty? (mapcat #(% a b) diff-fns))))
+
 (defn diff*
   [a b]
   (when-not (= a b)

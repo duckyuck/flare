@@ -123,7 +123,11 @@
            [(SequentialSizeDiff. 2 [] [:c :d])]))
 
     (is (= (diff [:a :b :c :d] [:a :b])
-           [(SequentialSizeDiff. 2 [:c :d] [])])))
+           [(SequentialSizeDiff. 2 [:c :d] [])]))
+
+    (is (= (diff [:x :b :c :d] [:a :b])
+           [(SequentialSizeDiff. 2 [:c :d] [])
+            {0 [(AtomDiff. :x :a)]}])))
 
   (testing "set"
 
