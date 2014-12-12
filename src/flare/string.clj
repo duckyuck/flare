@@ -22,14 +22,6 @@
   [diff]
   [(operation->keyword (.operation diff)) (.text diff)])
 
-(defn partition-between
-  [pred? coll]
-  (->> (map pred? coll (rest coll))
-       (reductions not= true)
-       (map list coll)
-       (partition-by second)
-       (map (partial map first))))
-
 (defn insert-operation?
   [[operation _]]
   (= operation :insert))
