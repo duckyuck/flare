@@ -1,4 +1,4 @@
-# Flare [![Build Status](https://travis-ci.org/andersfurseth/flare.svg?branch=master)](https://travis-ci.org/andersfurseth/flare)
+# Flare [![Build Status](https://travis-ci.org/andersfurseth/flare.svg?branch=master)](https://travis-ci.org/andersfurseth/flare) [![Coverage Status](https://img.shields.io/coveralls/andersfurseth/flare.svg)](https://coveralls.io/r/andersfurseth/flare)
 
 Flare brings enlightened failure reports to your [clojure.test](http://richhickey.github.io/clojure/clojure.test-api.html) and [midje](https://github.com/marick/Midje) tests.
 

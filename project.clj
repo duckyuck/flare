@@ -9,4 +9,5 @@
              :dev {:dependencies [[org.clojure/test.check "0.6.1"]]
                    :injections [(require 'flare.clojure-test)
                                 (flare.clojure-test/install!)]}}
+  :plugins [[lein-cloverage "1.0.2"]]
   :lein-release {:deploy-via :clojars})
