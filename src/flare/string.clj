@@ -54,19 +54,39 @@
   [pred coll]
   (first (filter pred coll)))
 
-(defn consolidate-diffs
-  [diffs]
-  (if (= 1 (count diffs))
-    (first diffs)
-    [:change [(find-first insert-operation? diffs)
-              (find-first delete-operation? diffs)]]))
+(defn consolidate-tuples
+  [diff-tuples]
+  (if (= 1 (count diff-tuples))
+    (first diff-tuples)
+    [:change [(find-first insert-operation? diff-tuples)
+              (find-first delete-operation? diff-tuples)]]))
+
+(defn consolidate
+  [diff-tuples]
+  (->> diff-tuples
+       (partition-between (complement change-operations?))
+       (mapv consolidate-tuples)))
+
+(defn partition-between
+  [pred? coll]
+  (->> (map pred? coll (rest coll))
+       (reductions not= true)
+       (map list coll)
+       (partition-by second)
+       (map (partial map first))))
+
+(defn add-context
+  [diff-tuples]
+  (-> diff-tuples
+      (update-in [0] conj :first)
+      (update-in [(dec (count diff-tuples))] conj :last)))
 
 (defn diff-tuples
   [a b]
   (->> (diff-match-patch-string a b)
        (map diff->tuple)
-       (partition-between (complement change-operations?))
-       (map consolidate-diffs)))
+       consolidate
+       add-context))
 
 (defn count-differences
   [diff-tuples]
@@ -136,9 +156,21 @@
       (append-dashes (count insert))
       enclose-in-parenthesis))
 
-(defmethod render-tuple :default
-  [[_ s]]
-  s)
+(defn append-str
+  [s n to-append]
+  (str (apply str (take n to-append)) s))
+
+(defn prepend-str
+  [s n to-prepend]
+  (str s (apply str (take-last n to-prepend))))
+
+(defmethod render-tuple :equal
+  [[_ s context]]
+  (if (> (count s) 10)
+    (-> "..."
+        (cond-> (not= context :first) (append-str 6 s))
+        (cond-> (not= context :last) (prepend-str 6 s)))
+    s))
 
 (defn diff-tuples->string
   [diff-tuples]
