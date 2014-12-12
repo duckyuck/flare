@@ -53,12 +53,6 @@
     [:change [(find-first insert-operation? diff-tuples)
               (find-first delete-operation? diff-tuples)]]))
 
-(defn consolidate
-  [diff-tuples]
-  (->> diff-tuples
-       (partition-between (complement change-operations?))
-       (mapv consolidate-tuples)))
-
 (defn partition-between
   [pred? coll]
   (->> (map pred? coll (rest coll))
@@ -66,6 +60,12 @@
        (map list coll)
        (partition-by second)
        (map (partial map first))))
+
+(defn consolidate
+  [diff-tuples]
+  (->> diff-tuples
+       (partition-between (complement change-operations?))
+       (mapv consolidate-tuples)))
 
 (defn add-context
   [diff-tuples]

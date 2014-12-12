@@ -7,6 +7,10 @@
             [clojure.test.check.properties :as prop]
             [clojure.test :refer [is deftest]]))
 
+(deftest diff-swallows-exceptions-test
+  (with-redefs [diff* #(throw (Exception.))]
+    (is (nil? (diff :what :ever)))))
+
 (defspec diff-never-returns-a-diff-when-inputs-are-equal
   100
   (prop/for-all [v gen/any]

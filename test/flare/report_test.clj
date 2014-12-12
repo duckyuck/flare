@@ -45,6 +45,10 @@
   (is (= (generate-report-for-keyed-diff [[:a :b :c] [(AtomDiff. 1 2)]])
          "in [:a :b :c] expected 1, was 2")))
 
+(deftest generate-reports-swallows-exceptions-test
+  (with-redefs [generate-reports* #(throw (Exception.))]
+    (is (nil? (generate-reports :whatever)))))
+
 (defspec generate-report-always-returns-non-empty-list-when-given-diffs
   100
   (prop/for-all [[a b] (distinct-values gen/any gen/any)]
