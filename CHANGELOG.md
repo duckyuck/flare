@@ -1,3 +1,9 @@
+## 0.2.8-SNAPSHOT
+
+Changes:
+
+  - Longer equal parts of string diffs get elided.
+
 ## 0.2.7
 
 Changes:
