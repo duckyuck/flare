@@ -1,4 +1,4 @@
-## 0.2.8-SNAPSHOT
+## 0.2.8
 
 Changes:
 

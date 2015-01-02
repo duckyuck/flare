@@ -2,7 +2,7 @@
 
 Flare brings enlightened failure reports to your [clojure.test](http://richhickey.github.io/clojure/clojure.test-api.html) and [Midje](https://github.com/marick/Midje) tests.
 
-Latest version is `[flare "0.2.7"]`.
+Latest version is `[flare "0.2.8"]`.
 
 ## Usage
 
