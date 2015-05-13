@@ -1,3 +1,9 @@
+## 0.2.9
+
+Features:
+
+  - Support for integration with [expectations](https://github.com/jaycfields/expectations). At the time being, `flare` Only overriding how string diffs get reported in `expectations` tests.
+  
 ## 0.2.8
 
 Changes:
