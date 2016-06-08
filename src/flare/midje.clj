@@ -1,5 +1,6 @@
 (ns flare.midje
-  (:require [flare.core :refer [diff generate-reports]]
+  (:require [flare.diff :refer [diff]]
+            [flare.report :refer [report]]
             [midje.emission.plugins.default :as default]
             [midje.emission.plugins.util :as util]
             [midje.emission.state :as state]))
@@ -20,7 +21,7 @@
     (default-fail-emissioner failure)
     (when (= (:type failure) :actual-result-did-not-match-expected-value)
       (some-> (diff (:expected-result failure) (:actual failure))
-              generate-reports
+              report
               emit-reports)))
 
   (def emission-map (assoc default/emission-map

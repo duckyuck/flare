@@ -1,26 +1,37 @@
 (ns flare.string
-  (:require [flare.atom :refer [diff-atom]]
-            [flare.diff :refer [diff*]]
-            [flare.report :refer [Report]]
-            [flare.util :refer [pluralize]])
-  (:import [name.fraser.neil.plaintext diff_match_patch]
-           [name.fraser.neil.plaintext diff_match_patch$Operation]))
-
-(defn diff-match-patch-string
-  [a b]
-  (let [dmp (diff_match_patch.)
-        diff (.diff_main dmp a b)]
-    (.diff_cleanupSemantic dmp diff)
-    diff))
+  (:require [flare.util :refer [pluralize]]
+            #?(:cljs cljsjs.google-diff-match-patch))
+  #?(:clj (:import [name.fraser.neil.plaintext diff_match_patch]
+                   [name.fraser.neil.plaintext diff_match_patch$Operation])))
 
 (def operation->keyword
-  {diff_match_patch$Operation/EQUAL  :equal
-   diff_match_patch$Operation/INSERT :insert
-   diff_match_patch$Operation/DELETE :delete})
+  #?(:clj {diff_match_patch$Operation/DELETE :delete
+           diff_match_patch$Operation/INSERT :insert
+           diff_match_patch$Operation/EQUAL  :equal}
+     :cljs {-1 :delete
+            0 :equal
+            1 :insert}))
 
-(defn diff->tuple
-  [diff]
-  [(operation->keyword (.operation diff)) (.text diff)])
+#?(:clj
+   (defn diff->tuple
+     [diff]
+     [(operation->keyword (.operation diff)) (.text diff)]))
+
+(defn create-dmp []
+  #?(:clj (diff_match_patch.)
+     :cljs (js/diff_match_patch.)))
+
+(defn dmp-diff->tuples [diff]
+  #?(:clj (map diff->tuple diff)
+     :cljs (->> diff
+                js->clj
+                (map #(update % 0 operation->keyword)))))
+
+(defn diff-match-patch-string [a b]
+  (let [dmp (create-dmp)
+          diff (.diff_main dmp a b)]
+     (.diff_cleanupSemantic dmp diff)
+     diff))
 
 (defn insert-operation?
   [[operation _]]
@@ -76,7 +87,7 @@
 (defn diff-tuples
   [a b]
   (->> (diff-match-patch-string a b)
-       (map diff->tuple)
+       dmp-diff->tuples
        consolidate
        add-context))
 
@@ -88,7 +99,7 @@
 
 (defn levenshtein-distance
   [diff]
-  (.diff_levenshtein (diff_match_patch.) diff))
+  (.diff_levenshtein (create-dmp) diff))
 
 (defn string-similarity
   [a b]
@@ -101,7 +112,8 @@
   [a b]
   (let [a->b (diff-tuples a b)
         b->a (diff-tuples b a)]
-    {:a                 b
+    {:type :string
+     :a                 b
      :b                 b
      :a->b              a->b
      :b->a              b->a
@@ -175,18 +187,19 @@
   (long (* n 100)))
 
 (defn report-string-diff
-  [{:keys [a->b b->a differences-count similarity]}]
+  [{:keys [a->b b->a differences-count similarity]} & rest]
   [(str "strings have " differences-count (pluralize differences-count " difference") " "
         "(" (fraction->percent similarity)  "% similarity)")
    (str "expected: " (pr-str (diff-tuples->string a->b)))
    (str "actual:   " (pr-str (diff-tuples->string b->a)))])
 
-(defrecord StringDiff [diff]
-  Report
-  (report [_] (report-string-diff diff)))
-
 (defn diff-string
-  [a b]
-  (if (= (type b) String)
-    [(StringDiff. (create-string-diff a b))]
-    (diff-atom a b)))
+  [a b _]
+  [(let [a->b (diff-tuples a b)
+         b->a (diff-tuples b a)]
+     {:type :string
+      :a->b              a->b
+      :b->a              b->a
+      :differences-count (count-differences a->b)
+      :similarity        (string-similarity a b)})])
+
