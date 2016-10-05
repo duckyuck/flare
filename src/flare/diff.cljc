@@ -60,4 +60,4 @@
   [a b]
   (try
     (diff* a b)
-    (catch Exception e)))
+    (catch #?(:clj Exception :cljs js/Error) e)))

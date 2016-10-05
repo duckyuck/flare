@@ -29,4 +29,4 @@
   [diff]
   (try
     (report* diff)
-    (catch Exception e)))
+    (catch #?(:clj Exception :cljs js/Error) e)))
