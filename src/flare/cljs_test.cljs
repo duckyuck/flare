@@ -6,7 +6,6 @@
 
 (defn report
   [diff]
-  (println "")
   (let [the-report (report/report diff)]
     (println (clojure.string/join "\n" the-report))))
 
@@ -17,5 +16,6 @@
     (println (ct/testing-contexts-str)))
   (when-let [message (:message m)] (println message))
   (ct/print-comparison m)
+  (println "")
   (when-let [diff (::difference m)]
     (report diff)))
