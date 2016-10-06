@@ -1,13 +1,7 @@
 (ns flare.cljs-test
   (:require [flare.report :as report]
             [flare.diff :as diff]
-            [cljs.test :as ct])
-  (:require-macros [flare.cljs-test]))
-
-(defn report
-  [diff]
-  (let [the-report (report/report diff)]
-    (println (clojure.string/join "\n" the-report))))
+            [cljs.test :as ct]))
 
 (defmethod cljs.test/report [:cljs.test/default :fail] [m]
   (ct/inc-report-counter! :fail)
@@ -16,6 +10,7 @@
     (println (ct/testing-contexts-str)))
   (when-let [message (:message m)] (println message))
   (ct/print-comparison m)
-  (println "")
-  (when-let [diff (::difference m)]
-    (report diff)))
+  (let [[pred & values] (second (:actual m))]
+    (when (and (= pred '=) (= 2 (count values)))
+      (when-let [diff (apply diff/diff values)]
+        (println "\n" (clojure.string/join "\n" (report/report diff)))))))

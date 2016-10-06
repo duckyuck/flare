@@ -5,9 +5,7 @@
 
 (defn report
   [diff]
-  (println "")
-  (let [the-report (report/report diff)]
-    (println (clojure.string/join "\n" the-report))))
+  (println (clojure.string/join "\n" (report/report diff))))
 
 (defn diff
   [args opts]
@@ -21,7 +19,6 @@
   ([]
    (install! {}))
   ([opts]
-   (println "installing flare")
    (defmethod ct/report :fail [m]
      (ct/with-test-out
        (ct/inc-report-counter :fail)
