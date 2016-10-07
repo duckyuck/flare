@@ -4,15 +4,15 @@
             [cljs.test :as ct]))
 
 (defn render-diff [m]
-  (try
-    (let [[pred & values] (second (:actual m))]
+  (let [[pred & values] (second (:actual m))]
+    (try
       (when (and (= pred '=) (= 2 (count values)))
         (when-let [diff (apply diff/diff* values)]
-          (println "\n" (clojure.string/join "\n" (report/report* diff))))))
-    (catch js/Error e
-      (println "*** Oh noes! Flare threw an exception diffing the following values:")
-      (println values)
-      (println "*** Exception thrown is:" e))))
+          (println "\n" (clojure.string/join "\n" (report/report* diff)))))
+      (catch js/Error e
+        (println "*** Oh noes! Flare threw an exception diffing the following values:")
+        (println values)
+        (println "*** Exception thrown is:" e)))))
 
 (defmethod cljs.test/report [:cljs.test/default :fail] [m]
   (ct/inc-report-counter! :fail)
