@@ -10,3 +10,4 @@ pom.xml.asc
 dev/
 /figwheel_server.log
 /resources/
+out/
