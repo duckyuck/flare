@@ -11,6 +11,7 @@
    (cond
      (indexed-diff? diff-or-coll)
      (reduce into
+             {}
              (map (fn [[k v]] (flatten-indexed-diffs a (conj ks k) v))
                      (:diff diff-or-coll)))
 

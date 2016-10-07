@@ -7,12 +7,12 @@
             [flare.set :as set]))
 
 (def reporters
-  {:sequential sequential/report-size-diff
-   :map        map/report-keys-diff
-   :set        set/report-set
-   :string     string/report-string-diff
-   :atom       atom/report-atom-diff
-   :indexed    indexed/report-indexed-diff})
+  {:sequential-size sequential/report-size-diff
+   :keys            map/report-keys-diff
+   :set             set/report-set
+   :string          string/report-string-diff
+   :atom            atom/report-atom-diff
+   :indexed         indexed/report-indexed-diff})
 
 (declare report*)
 
@@ -29,4 +29,6 @@
   [diff]
   (try
     (report* diff)
-    (catch #?(:clj Exception :cljs js/Error) e)))
+    (catch #?(:clj Exception :cljs js/Error) e
+      ;; (println "report threw exception" e)
+      )))

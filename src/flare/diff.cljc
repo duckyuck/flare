@@ -60,4 +60,6 @@
   [a b]
   (try
     (diff* a b)
-    (catch #?(:clj Exception :cljs js/Error) e)))
+    (catch #?(:clj Exception :cljs js/Error) e
+      ;; (println "diff threw exception" e)
+      )))
