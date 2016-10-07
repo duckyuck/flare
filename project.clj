@@ -22,7 +22,7 @@
 
   :profiles {:provided {:dependencies [[midje "1.6.3"]
                                        [expectations "2.1.1"]]}
-             :dev {:dependencies [[org.clojure/test.check "0.6.1"]
+             :dev {:dependencies [[org.clojure/test.check "0.9.0"]
                                   [binaryage/devtools "0.7.2"]
                                   [figwheel-sidecar "0.5.4-7"]
                                   [com.cemerick/piggieback "0.2.1"]]

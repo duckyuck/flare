@@ -1,5 +1,5 @@
 (ns flare.diff-test
-  (:require [flare.diff :as sut ]
+  (:require [flare.diff :as sut]
             [flare.generators :refer [distinct-values]]
             [clojure.test.check :as tc]
             [clojure.test.check.clojure-test :refer [defspec]]
