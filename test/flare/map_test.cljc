@@ -36,19 +36,19 @@
   (is (= (report-keys-diff {:type :keys
                             :only-in :a
                             :keys #{:x}})
-         "expected map to contain key: :x, but not found."))
+         ["expected map to contain key: :x, but not found."]))
 
   (is (= (report-keys-diff {:type :keys
                             :only-in :a
                             :keys #{:x :y}})
-         "expected map to contain keys: #{:y :x}, but not found."))
+         ["expected map to contain keys: #{:y :x}, but not found."]))
 
   (is (= (report-keys-diff {:type :keys
                             :only-in :b
                             :keys #{:x}})
-         "map contained key: :x, but not expected."))
+         ["map contained key: :x, but not expected."]))
 
   (is (= (report-keys-diff {:type :keys
                             :only-in :b
                             :keys #{:x :y}})
-         "map contained keys: #{:y :x}, but not expected.")))
+         ["map contained keys: #{:y :x}, but not expected."])))

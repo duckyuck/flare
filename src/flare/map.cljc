@@ -6,12 +6,12 @@
 (defn report-keys-diff
   [{:keys [only-in keys]} & rest]
   (case only-in
-    :a (str "expected map to contain " (pluralize keys "key") ": "
-            (pr-str (flatten-when-single keys))
-            ", but not found.")
-    :b (str "map contained " (pluralize keys "key") ": "
-            (pr-str (flatten-when-single keys))
-            ", but not expected.")))
+    :a [(str "expected map to contain " (pluralize keys "key") ": "
+             (pr-str (flatten-when-single keys))
+             ", but not found.")]
+    :b [(str "map contained " (pluralize keys "key") ": "
+             (pr-str (flatten-when-single keys))
+             ", but not expected.")]))
 
 (defn diff-keys
   [a b _]
