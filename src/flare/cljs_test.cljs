@@ -8,7 +8,7 @@
     (try
       (when (and (= pred '=) (= 2 (count values)))
         (when-let [diff (apply diff/diff* (reverse values))]
-          (println "\n" (clojure.string/join "\n" (report/report* diff)))))
+          (println (str "\n" (clojure.string/join "\n" (report/report* diff))))))
       (catch js/Error e
         (println "*** Oh noes! Flare threw an exception diffing the following values:")
         (println values)

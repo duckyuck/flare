@@ -5,7 +5,7 @@
 
 (defn report
   [diff]
-  (println "\n" (clojure.string/join "\n" (report/report diff))))
+  (println (str "\n" (clojure.string/join "\n" (report/report diff)))))
 
 (defn diff
   [args opts]
