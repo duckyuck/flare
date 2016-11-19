@@ -12,7 +12,7 @@
   (with-redefs [report* (fn [_] (throw (ex-info "what ever" {})))]
     (is (nil? (report :whatever)))))
 
-(defspec generate-report-always-returns-non-empty-list-when-given-diffs
+#_(defspec generate-report-always-returns-non-empty-list-when-given-diffs
   100
   (prop/for-all [[a b] (distinct-values gen/any gen/any)]
                 (not-empty (report (diff* a b)))))
