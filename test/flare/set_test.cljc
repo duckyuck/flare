@@ -28,9 +28,9 @@
   (is (= (report-set {:type :set
                       :only-in :a
                       :values [:x]})
-         "expected set to contain: :x, but not found."))
+         ["expected set to contain: :x, but not found."]))
 
   (is (= (report-set {:type :set
                       :only-in :b
                       :values [:x]})
-         "set contained: :x, but not expected.")))
+         ["set contained: :x, but not expected."])))

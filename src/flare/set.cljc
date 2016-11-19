@@ -3,16 +3,16 @@
 
 (defn report-set
   [{:keys [only-in values]} & rest]
-  (case only-in
-    :a
-    (str "expected set to contain: "
-         (pr-str (flatten-when-single values))
-         ", but not found.")
+  [(case only-in
+      :a
+      (str "expected set to contain: "
+           (pr-str (flatten-when-single values))
+           ", but not found.")
 
-    :b
-    (str "set contained: "
-         (pr-str (flatten-when-single values))
-         ", but not expected.")))
+      :b
+      (str "set contained: "
+           (pr-str (flatten-when-single values))
+           ", but not expected."))])
 
 (defn diff-set
   [a b]
