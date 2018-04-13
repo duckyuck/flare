@@ -1,4 +1,5 @@
-(ns flare.indexed)
+(ns flare.indexed
+  (:require [clojure.string :as str]))
 
 (defn indexed-diff? [m]
   (and (map? m)
@@ -26,7 +27,7 @@
      :else (throw (ex-info "diff-or-coll must be vector or map" diff-or-coll)))))
 
 (defn join-with-newlines [coll]
-  (clojure.string/join "\n" coll))
+  (str/join "\n" coll))
 
 (defn report-indexed-diff-entry [[path diffs] report]
   (let [reports (flatten (map report diffs))
