@@ -20,6 +20,10 @@ To use Flare with [Leiningen](http://leiningen.org/), merge the following with y
 
 Run your tests, using your favourite test runner, and enjoy the enlightenment Flare brings to your failing tests.
 
+## Using with ClojureScript
+
+For ClojureScript, just require `flare.cljs-test` somewhere in your test setup, and voila! Enlightened tests are yours to behold.
+
 ## License
 
 Copyright © 2015 Anders Furseth
